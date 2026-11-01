@@ -1,0 +1,170 @@
+
+import SwiftUI
+
+// MARK: - Main Login Screen
+
+struct ContentView: View {
+
+    @State private var username = ""
+    @State private var password = ""
+    @State private var isLoggedIn = false
+    @State private var showError = false
+
+    var body: some View {
+
+        NavigationStack {
+
+            VStack(spacing: 20) {
+
+                // App Title
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 65))
+                    .foregroundColor(.blue)
+
+                Text("My To-Do App")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                Text("Login to manage your tasks")
+                    .foregroundColor(.gray)
+
+                // Username Field
+                TextField("Enter Username", text: $username)
+                    .textFieldStyle(.roundedBorder)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+
+                // Password Field
+                SecureField("Enter Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
+
+                // Login Button
+                Button(action: {
+
+                    if username == "admin" && password == "1234" {
+                        isLoggedIn = true
+                    } else {
+                        showError = true
+                    }
+
+                }) {
+                    Text("Login")
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+
+            }
+            .padding(25)
+            .navigationTitle("Login")
+            .navigationBarTitleDisplayMode(.inline)
+
+            // Navigate to To-Do Screen
+            .navigationDestination(isPresented: $isLoggedIn) {
+                TodoView()
+            }
+
+            // Error Alert
+            .alert("Login Failed", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Invalid username or password.")
+            }
+
+        }
+    }
+}
+
+
+// MARK: - To-Do List Screen
+
+struct TodoView: View {
+
+    @State private var newTask = ""
+
+    @State private var tasks: [TodoItem] = [
+        TodoItem(title: "Learn SwiftUI"),
+        TodoItem(title: "Practice NavigationStack"),
+        TodoItem(title: "Complete Lab Task")
+    ]
+
+    var body: some View {
+
+        VStack(spacing: 15) {
+
+            Text("My Tasks")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+
+            // Add Task Section
+            HStack {
+
+                TextField("Enter a new task", text: $newTask)
+                    .textFieldStyle(.roundedBorder)
+
+                Button(action: {
+
+                    let task = newTask.trimmingCharacters(
+                        in: .whitespacesAndNewlines
+                    )
+
+                    if !task.isEmpty {
+                        tasks.append(TodoItem(title: task))
+                        newTask = ""
+                    }
+
+                }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.horizontal)
+
+            // Task List
+            List {
+
+                ForEach(tasks) { task in
+
+                    HStack {
+                        Image(systemName: "circle")
+                            .foregroundColor(.blue)
+
+                        Text(task.title)
+                    }
+
+                }
+                .onDelete(perform: deleteTask)
+
+            }
+
+        }
+        .navigationTitle("To-Do List")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // Delete Task Function
+    func deleteTask(at offsets: IndexSet) {
+        tasks.remove(atOffsets: offsets)
+    }
+}
+
+
+// MARK: - Task Model
+
+struct TodoItem: Identifiable {
+
+    let id = UUID()
+    var title: String
+
+}
+
+
+// MARK: - Preview
+
+#Preview {
+    ContentView()
+}
