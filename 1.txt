@@ -1,7 +1,7 @@
 
 import SwiftUI
 
-// MARK: - Main Login Screen
+// MARK: - Login Screen
 
 struct ContentView: View {
 
@@ -14,81 +14,71 @@ struct ContentView: View {
 
         NavigationStack {
 
-            VStack(spacing: 20) {
+            if isLoggedIn {
 
-                // App Title
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 65))
-                    .foregroundColor(.blue)
-
-                Text("My To-Do App")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-
-                Text("Login to manage your tasks")
-                    .foregroundColor(.gray)
-
-                // Username Field
-                TextField("Enter Username", text: $username)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-
-                // Password Field
-                SecureField("Enter Password", text: $password)
-                    .textFieldStyle(.roundedBorder)
-
-                // Login Button
-                Button(action: {
-
-                    if username == "admin" && password == "1234" {
-                        isLoggedIn = true
-                    } else {
-                        showError = true
-                    }
-
-                }) {
-                    Text("Login")
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
-
-            }
-            .padding(25)
-            .navigationTitle("Login")
-            .navigationBarTitleDisplayMode(.inline)
-
-            // Navigate to To-Do Screen
-            .navigationDestination(isPresented: $isLoggedIn) {
                 TodoView()
-            }
 
-            // Error Alert
-            .alert("Login Failed", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Invalid username or password.")
-            }
+            } else {
 
+                VStack(spacing: 20) {
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+
+                    Text("My To-Do App")
+                        .font(.largeTitle)
+                        .bold()
+
+                    TextField("Username", text: $username)
+                        .textFieldStyle(.roundedBorder)
+
+                    SecureField("Password", text: $password)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button("Login") {
+
+                        if username == "admin" &&
+                           password == "1234" {
+
+                            isLoggedIn = true
+
+                        } else {
+
+                            showError = true
+                        }
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+
+                }
+                .padding()
+                .alert("Login Failed", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text("Invalid username or password")
+                }
+            }
         }
     }
 }
 
 
-// MARK: - To-Do List Screen
+// MARK: - Todo Screen
 
 struct TodoView: View {
 
     @State private var newTask = ""
 
     @State private var tasks: [TodoItem] = [
+
         TodoItem(title: "Learn SwiftUI"),
         TodoItem(title: "Practice NavigationStack"),
         TodoItem(title: "Complete Lab Task")
+
     ]
 
     var body: some View {
@@ -97,12 +87,14 @@ struct TodoView: View {
 
             Text("My Tasks")
                 .font(.largeTitle)
-                .fontWeight(.bold)
+                .bold()
+                .padding(.top)
 
-            // Add Task Section
+            // Add Task
+
             HStack {
 
-                TextField("Enter a new task", text: $newTask)
+                TextField("Enter new task", text: $newTask)
                     .textFieldStyle(.roundedBorder)
 
                 Button(action: {
@@ -112,11 +104,16 @@ struct TodoView: View {
                     )
 
                     if !task.isEmpty {
-                        tasks.append(TodoItem(title: task))
+
+                        tasks.append(
+                            TodoItem(title: task)
+                        )
+
                         newTask = ""
                     }
 
                 }) {
+
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 32))
                         .foregroundColor(.blue)
@@ -124,31 +121,44 @@ struct TodoView: View {
             }
             .padding(.horizontal)
 
-            // Task List
+            // Display Tasks
+
             List {
 
-                ForEach(tasks) { task in
+                ForEach(tasks.indices, id: \.self) { index in
 
                     HStack {
-                        Image(systemName: "circle")
-                            .foregroundColor(.blue)
 
-                        Text(task.title)
+                        Text(tasks[index].title)
+
+                        Spacer()
+
+                        Button(action: {
+
+                            deleteTask(at: index)
+
+                        }) {
+
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        }
                     }
-
                 }
-                .onDelete(perform: deleteTask)
-
             }
-
         }
         .navigationTitle("To-Do List")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
-    // Delete Task Function
-    func deleteTask(at offsets: IndexSet) {
-        tasks.remove(atOffsets: offsets)
+
+    // MARK: - Delete Function
+
+    func deleteTask(at index: Int) {
+
+        if index >= 0 && index < tasks.count {
+
+            tasks.remove(at: index)
+
+        }
     }
 }
 
@@ -158,6 +168,7 @@ struct TodoView: View {
 struct TodoItem: Identifiable {
 
     let id = UUID()
+
     var title: String
 
 }
